@@ -5,7 +5,7 @@ const resolvers = require('./resolvers');
 // Define your types here.
 const typeDefs = `
   type Query {
-    allLinks: [Link!]!
+    allLinks(filter: LinkFilter): [Link!]!
   }
 
   type Mutation {
@@ -67,6 +67,12 @@ const typeDefs = `
   input AUTH_PROVIDER_EMAIL {
       email: String!
       password: String!
+  }
+
+  input LinkFilter {
+    OR: [LinkFilter!]
+    description_contains: String
+    url_contains: String
   }
 `;
 
