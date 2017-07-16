@@ -4,6 +4,9 @@ const bodyParser = require('body-parser');
 // This package will handle GraphQL server requests and responses
 // for you, based on your schema.
 const {graphqlExpress, graphiqlExpress} = require('graphql-server-express');
+const {execute, subscribe} = require('graphql');
+const {createServer} = require('http');
+const {SubscriptionServer} = require('subscriptions-transport-ws');
 
 const {authenticate} = require('./authentication');
 const buildDataloaders = require('./dataloaders');
@@ -30,13 +33,20 @@ const start = async () => {
   };
   app.use('/graphql', bodyParser.json(), graphqlExpress(buildOptions));
 
+  const PORT = 3000;
+
   app.use('/graphiql', graphiqlExpress({
     endpointURL: '/graphql',
     passHeader: `'Authorization': 'bearer token-maria.bello@vtex.com'`,
+    subscriptionsEndpoint: `ws://localhost:${PORT}/subscriptions`,
   }));
 
-  const PORT = 3000;
-  app.listen(PORT, () => {
+  const server = createServer(app);
+  server.listen(PORT, () => {
+    new SubscriptionServer(
+      {execute, subscribe, schema},
+      {server, path: '/subscriptions'},
+    );
     console.log(`Hackernews GraphQL server running on port ${PORT}.`)
   });
 };
